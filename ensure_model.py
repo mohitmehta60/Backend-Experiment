@@ -1,6 +1,11 @@
+#!/usr/bin/env python3
+"""
+Ensure the ML model is trained and available before starting the API server.
+This script checks if the model exists and trains it if necessary.
+"""
+
 import os
 import sys
-import uvicorn
 import logging
 from pathlib import Path
 
@@ -46,12 +51,10 @@ def ensure_model_exists():
         os.chdir(model_dir)
         logger.info(f"Changed directory to: {model_dir}")
         
-        # Add model directory to path
+        # Import and run training
         sys.path.insert(0, str(model_dir))
         
         logger.info("Starting model training...")
-        
-        # Import and run training
         import train
         train.main()
         
@@ -72,26 +75,5 @@ def ensure_model_exists():
             sys.path.remove(str(model_dir))
 
 if __name__ == "__main__":
-    try:
-        # Ensure model is available before starting server
-        logger.info("🚀 Starting Railway deployment...")
-        
-        if not ensure_model_exists():
-            logger.error("❌ Failed to ensure model availability")
-            sys.exit(1)
-        
-        port = int(os.environ.get("PORT", 8000))
-        logger.info(f"Starting server on port {port}")
-        
-        # Start the server with proper configuration for Railway
-        uvicorn.run(
-            "main:app", 
-            host="0.0.0.0", 
-            port=port,
-            log_level="info",
-            access_log=True,
-            timeout_keep_alive=30
-        )
-    except Exception as e:
-        logger.error(f"Failed to start server: {str(e)}")
-        raise
+    success = ensure_model_exists()
+    sys.exit(0 if success else 1)

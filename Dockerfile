@@ -24,6 +24,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . /app/backend
 
+# Train the ML model during build
+WORKDIR /app/backend/My new ml model
+RUN python train.py
+
+# Return to main app directory
+WORKDIR /app/backend
+
 # Expose port
 EXPOSE $PORT
 
